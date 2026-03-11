@@ -1,4 +1,4 @@
-module go-commons
+module github.com/TB-Systems/go-commons
 
 go 1.25.5
 

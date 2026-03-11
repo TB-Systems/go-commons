@@ -1,8 +1,8 @@
 package utils
 
 import (
-	"go-commons/constants"
-	"go-commons/errors"
+	"github.com/TB-Systems/go-commons/constants"
+	"github.com/TB-Systems/go-commons/errors"
 	"net/http"
 	"time"
 

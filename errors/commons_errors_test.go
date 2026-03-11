@@ -1,7 +1,7 @@
 package errors
 
 import (
-	"go-commons/constants"
+	"github.com/TB-Systems/go-commons/constants"
 	"testing"
 )
 

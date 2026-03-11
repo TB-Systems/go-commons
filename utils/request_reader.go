@@ -1,8 +1,8 @@
 package utils
 
 import (
-	"go-commons/errors"
-	"go-commons/validator"
+	"github.com/TB-Systems/go-commons/errors"
+	"github.com/TB-Systems/go-commons/validator"
 	"net/http"
 
 	"github.com/gin-gonic/gin"

@@ -5,7 +5,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"go-commons/constants"
+	"github.com/TB-Systems/go-commons/constants"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"

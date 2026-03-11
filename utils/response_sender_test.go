@@ -6,7 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"go-commons/errors"
+	"github.com/TB-Systems/go-commons/errors"
 
 	"github.com/gin-gonic/gin"
 )
