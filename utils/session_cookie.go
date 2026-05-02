@@ -26,6 +26,19 @@ func SetSessionToken(ctx *gin.Context, cookieName string, token string, expiresA
 	)
 }
 
+func ClearSessionToken(ctx *gin.Context, cookieName string) {
+	ctx.SetSameSite(http.SameSiteLaxMode)
+	ctx.SetCookie(
+		cookieName,
+		"",
+		-1,
+		"/",
+		"",
+		isSecureRequest(ctx),
+		true,
+	)
+}
+
 func isSecureRequest(ctx *gin.Context) bool {
 	return ctx.Request.TLS != nil || strings.EqualFold(ctx.GetHeader("X-Forwarded-Proto"), "https")
 }

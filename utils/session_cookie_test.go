@@ -83,6 +83,51 @@ func TestSetSessionToken(t *testing.T) {
 	})
 }
 
+func TestClearSessionToken(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	t.Run("clears http only lax session cookie", func(t *testing.T) {
+		w := httptest.NewRecorder()
+		ctx, _ := gin.CreateTestContext(w)
+		ctx.Request = httptest.NewRequest(http.MethodPost, "/logout", nil)
+
+		ClearSessionToken(ctx, "session_cookie")
+
+		cookie := findCookie(t, w, "session_cookie")
+		if cookie.Value != "" {
+			t.Errorf("Expected cookie value to be blank, got %q", cookie.Value)
+		}
+		if cookie.MaxAge != -1 {
+			t.Errorf("Expected max age -1, got %d", cookie.MaxAge)
+		}
+		if cookie.Path != "/" {
+			t.Errorf("Expected path %q, got %q", "/", cookie.Path)
+		}
+		if !cookie.HttpOnly {
+			t.Error("Expected cookie to be HttpOnly")
+		}
+		if cookie.Secure {
+			t.Error("Expected cookie to be insecure for an HTTP request")
+		}
+
+		assertSetCookieHeaderContains(t, w, "SameSite=Lax")
+	})
+
+	t.Run("clears secure cookie for forwarded https request", func(t *testing.T) {
+		w := httptest.NewRecorder()
+		ctx, _ := gin.CreateTestContext(w)
+		ctx.Request = httptest.NewRequest(http.MethodPost, "/logout", nil)
+		ctx.Request.Header.Set("X-Forwarded-Proto", "https")
+
+		ClearSessionToken(ctx, "session_cookie")
+
+		cookie := findCookie(t, w, "session_cookie")
+		if !cookie.Secure {
+			t.Error("Expected cookie to be Secure for a forwarded HTTPS request")
+		}
+	})
+}
+
 func TestIsSecureRequest(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
