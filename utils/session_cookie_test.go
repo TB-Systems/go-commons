@@ -128,6 +128,65 @@ func TestClearSessionToken(t *testing.T) {
 	})
 }
 
+func TestSetCSRFToken(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	t.Run("sets readable lax csrf cookie", func(t *testing.T) {
+		w := httptest.NewRecorder()
+		ctx, _ := gin.CreateTestContext(w)
+		ctx.Request = httptest.NewRequest(http.MethodPost, "/login", nil)
+
+		SetCSRFToken(ctx, "csrf_cookie", "csrf-token", time.Now().Add(time.Hour))
+
+		cookie := findCookie(t, w, "csrf_cookie")
+		if cookie.Value != "csrf-token" {
+			t.Errorf("Expected cookie value %q, got %q", "csrf-token", cookie.Value)
+		}
+		if cookie.HttpOnly {
+			t.Error("Expected CSRF cookie not to be HttpOnly")
+		}
+		if cookie.MaxAge <= 0 || cookie.MaxAge > int(time.Hour.Seconds()) {
+			t.Errorf("Expected max age between 1 and 3600, got %d", cookie.MaxAge)
+		}
+		assertSetCookieHeaderContains(t, w, "SameSite=Lax")
+	})
+
+	t.Run("sets expired max age to zero", func(t *testing.T) {
+		w := httptest.NewRecorder()
+		ctx, _ := gin.CreateTestContext(w)
+		ctx.Request = httptest.NewRequest(http.MethodPost, "/login", nil)
+
+		SetCSRFToken(ctx, "csrf_cookie", "csrf-token", time.Now().Add(-time.Minute))
+
+		cookie := findCookie(t, w, "csrf_cookie")
+		if cookie.MaxAge != 0 {
+			t.Errorf("Expected max age 0, got %d", cookie.MaxAge)
+		}
+	})
+}
+
+func TestClearCSRFToken(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	w := httptest.NewRecorder()
+	ctx, _ := gin.CreateTestContext(w)
+	ctx.Request = httptest.NewRequest(http.MethodPost, "/logout", nil)
+
+	ClearCSRFToken(ctx, "csrf_cookie")
+
+	cookie := findCookie(t, w, "csrf_cookie")
+	if cookie.Value != "" {
+		t.Errorf("Expected cookie value to be blank, got %q", cookie.Value)
+	}
+	if cookie.MaxAge != -1 {
+		t.Errorf("Expected max age -1, got %d", cookie.MaxAge)
+	}
+	if cookie.HttpOnly {
+		t.Error("Expected CSRF cookie not to be HttpOnly")
+	}
+	assertSetCookieHeaderContains(t, w, "SameSite=Lax")
+}
+
 func TestIsSecureRequest(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
